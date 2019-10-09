@@ -9,20 +9,16 @@ provisioner:
 
 platforms:
   - name: ubuntu
-
-transport:
-  name: ssh
-  ssh_key: ~/.ssh/id_rsa
-
+  
 verifier:
   name: terraform
-  format: doc
-  groups:
+  systems:
     - name: default
-      controls:
-        - operating_system
-      hostnames: public_dns
-      username: ubuntu
+      backend: ssh
+      key_files: 
+        - ~/.ssh/id_rsa
+      hosts_output: public_dns
+      user: ubuntu
 
 suites:
   - name: default
