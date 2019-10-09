@@ -2,21 +2,58 @@
 Tutorial -  setting up a Terraform config to spin up an Amazon Web Services (AWS) EC2 instance using Inspec and Kitchen-Terraform from scratch.
 
 # Purpose
-This tutorial will walk you through setting up a Terraform config to spin up an Amazon Web Services (AWS) EC2 instance using Inspec and Kitchen-Terraform from scratch.
+This repositoy is based on tutorial https://newcontext-oss.github.io/kitchen-terraform/tutorials/amazon_provider_ec2.html that can walk you through setting up a Terraform config to spin up an Amazon Web Services (AWS) EC2 instance using Inspec and Kitchen-Terraform from scratch. (Note: these instructions are for Unix based systems only)
 
-(Note: these instructions are for Unix based systems only)
+Note - it is NOT A REPLACEMNT and not a REPEAT of the original tutrial. You still should reference that step-bystep first. Insterad, what this repository contains - is the actual code,some logs, plus desciprtion of some changes that you need to do to run it on the modern  Terraform (v0.12.9) and KitchenCI (v1.25.0) with Kitchen-Terraform gem 5.1.1. 
 
 # Notes
 
-Original Tutorial is here : https://newcontext-oss.github.io/kitchen-terraform/tutorials/amazon_provider_ec2.html
+Follow original Tutorial is here: https://newcontext-oss.github.io/kitchen-terraform/tutorials/amazon_provider_ec2.html, but be aware that for the current version of Kitchen Terraform provider you may need to make some changes.
 
-Changes in this repo, that differs from original tutorial :
-I've used `rbenv` to work with local version of Ruby 2.3.1 as current version in macOS Mojave is 2.6.4
-That's why there is .ruby-version file in repo :
+The provider itself can be found in this repo: https://github.com/newcontext-oss/kitchen-terraform
 
+Changes in this repo, that differs from the original tutorial :
+- I've used `rbenv` to work with the local version of Ruby 2.3.1 (as current version in macOS Mojave is 2.6.4)
+That's why there is `.ruby-version` file in the repo
+- Original Tutorial is for the US , so they using `us-east-1` region and USA AMI ID. Mine are : `eu-central-1` and `ami-08a162fe1419adb2a` corresponding. 
+- Tutorial reference old version of KitchenCI from 2016 - early 2017 with Kitchen-Terraform around gem version 3-4, without mentioning it anywhere. So the following piece of code describing verifier : 
+```yml
+verifier:
+  name: terraform
+  format: doc
+  groups:
+    - name: default
+      controls:
+        - operating_system
+      hostnames: public_dns
+      username: ubuntu
+```
+is NOT GOING TO WORK with current versions of KitchenCI and Terraform provider, you will always have EMPTY succesfull tests. E.g. no tests --> full silent success. For example, obversve output : 
+```
+bundle exec kitchen verify
+-----> Starting Kitchen (v1.25.0)
+-----> Verifying <default-ubuntu>...
+$$$$$$ Running command `terraform workspace select kitchen-terraform-default-ubuntu` in directory /Users/.../kitchen-terraform
+$$$$$$ Running command `terraform output -json` in directory /Users/.../kitchen-terraform
+       Finished verifying <default-ubuntu> (0m0.11s).
+-----> Kitchen is finished. (0m1.79s)
+```
+Now then for KitchenCI v1.25.0 with Kitchen-Terraform gem 5.1.1 the code above should be adopted as follows : 
+```yml
+verifier:
+  name: terraform
+  systems:
+    - name: default
+      backend: ssh
+      key_files: 
+        - ~/.ssh/id_rsa
+      hosts_output: public_dns
+      user: ubuntu
+```
+Note the usage of systems description and array of ssh key(s) 
+- Log files can be found at the ned of the readme - [here](#run-logs)
 
 # To do
-- [ ] Update README with changes for current version of Kitchen
 
 # Done
 - [x] initial readme
@@ -24,6 +61,7 @@ That's why there is .ruby-version file in repo :
 - [x] Setup development environment
 - [x] Setup Test Kitchen
 - [x] Writing a test
+- [x] Update README with changes for the current version of Kitchen
 
 
 # Run logs 
